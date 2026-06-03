@@ -1,7 +1,7 @@
 {
   "id": "therum-os-pure",
   "name": "Therum OS Pure",
-  "version": "1.9.16",
+  "version": "1.9.17",
   "description": "Therum OS raw — just Therum, no WordPress, no forks, no add-ons. Bundle ships Therum's mu-plugins only. (Will not boot until the standalone Therum runtime lands; current mu-plugins still call WP APIs.)",
   "source_site": "/Users/bleon061@cable.comcast.com/Local Sites/therum-os/app/public",
   "include": {
