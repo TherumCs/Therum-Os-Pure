@@ -1,0 +1,310 @@
+/* Therum OS Pure — admin + install styling. Single file, no preprocessor. */
+
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --surface-2: #f4f4f3;
+  --border: #e7e5e4;
+  --border-2: #d6d3d1;
+  --text: #1c1917;
+  --text-2: #57534e;
+  --text-3: #a8a29e;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --ok: #16a34a;
+  --err: #dc2626;
+  --r: 8px;
+  --r-lg: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Install / Login centered card ─────────────────────────────────────── */
+
+body.t-install {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+.t-install-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 8px 32px rgba(0,0,0,.04);
+}
+.t-brand {
+  font: 700 12px/1 system-ui;
+  letter-spacing: 0.18em;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.t-install-card h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.t-lede { color: var(--text-2); margin: 0 0 20px; }
+
+/* ── Admin shell ───────────────────────────────────────────────────────── */
+
+body.t-admin { background: var(--bg); }
+.t-shell {
+  display: grid;
+  grid-template-columns: 224px 1fr;
+  min-height: 100vh;
+}
+.t-sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+}
+.t-sidebar-brand {
+  font-weight: 700;
+  font-size: 14px;
+  padding: 4px 10px 18px;
+  color: var(--text);
+}
+.t-nav { display: flex; flex-direction: column; gap: 2px; }
+.t-nav-item {
+  display: block;
+  padding: 8px 12px;
+  border-radius: var(--r);
+  color: var(--text-2);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.t-nav-item:hover { background: var(--surface-2); color: var(--text); }
+.t-nav-item.is-active { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); }
+
+.t-sidebar-foot {
+  margin-top: auto;
+  padding: 16px 12px 0;
+  border-top: 1px solid var(--border);
+}
+.t-user { font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+.t-link-muted { color: var(--text-3); font-size: 12px; }
+
+.t-main { padding: 40px 48px 80px; min-width: 0; }
+
+.t-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.t-page-head h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+/* ── Cards (dashboard) ─────────────────────────────────────────────────── */
+
+.t-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.t-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 22px 20px;
+  color: var(--text);
+  transition: border-color .15s, transform .15s;
+}
+.t-card:hover {
+  border-color: var(--border-2);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.t-card-num {
+  font: 700 32px/1 system-ui;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.t-card-label {
+  font-size: 12px;
+  color: var(--text-2);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+
+.t-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.t-table th, .t-table td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.t-table tr:last-child td { border-bottom: none; }
+.t-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  font-weight: 600;
+  background: var(--surface-2);
+}
+.t-muted { color: var(--text-3); }
+.t-empty { text-align: center; padding: 36px 18px; color: var(--text-2); }
+.t-row-actions { white-space: nowrap; }
+.t-link { color: var(--accent); cursor: pointer; background: none; border: none; padding: 0; font: inherit; }
+.t-link-danger { color: var(--err); }
+.t-inline-form { display: inline; }
+
+/* ── Forms ─────────────────────────────────────────────────────────────── */
+
+.t-form { display: flex; flex-direction: column; gap: 14px; }
+.t-form-wide { max-width: 880px; }
+.t-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.t-form label small {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.t-form input[type=text],
+.t-form input[type=email],
+.t-form input[type=password],
+.t-form input:not([type]),
+.t-form textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  font: 14px/1.5 inherit;
+  color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.t-form input:focus, .t-form textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.t-form input[readonly] { background: var(--surface-2); color: var(--text-2); }
+
+.t-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.t-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  border-radius: var(--r);
+  border: 1px solid transparent;
+  background: var(--surface);
+  color: var(--text);
+  font: 600 13px/1 inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.t-btn:hover { background: var(--surface-2); text-decoration: none; }
+.t-btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
+.t-btn-primary:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.t-btn-danger { color: var(--err); border-color: var(--border); }
+.t-btn-danger:hover { background: color-mix(in srgb, var(--err) 10%, transparent); border-color: var(--err); }
+
+/* ── Editor ────────────────────────────────────────────────────────────── */
+
+.t-editor {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  overflow: hidden;
+}
+.t-editor-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.t-tab {
+  padding: 9px 16px;
+  border: none;
+  background: transparent;
+  font: 600 11px/1 inherit;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.t-tab.is-active { background: var(--surface); color: var(--text); border-bottom: 2px solid var(--accent); margin-bottom: -1px; }
+.t-editor-code {
+  width: 100%;
+  min-height: 360px;
+  padding: 14px;
+  font: 13px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  border: none;
+  resize: vertical;
+}
+.t-editor-code:focus { box-shadow: none; }
+.t-editor-preview { padding: 18px; min-height: 360px; }
+
+/* ── Flash messages ────────────────────────────────────────────────────── */
+
+.t-err, .t-ok {
+  padding: 11px 14px;
+  border-radius: var(--r);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.t-err { background: color-mix(in srgb, var(--err) 8%, transparent); color: var(--err); border: 1px solid color-mix(in srgb, var(--err) 28%, transparent); }
+.t-ok  { background: color-mix(in srgb, var(--ok) 8%, transparent);  color: var(--ok);  border: 1px solid color-mix(in srgb, var(--ok) 28%, transparent); }
+
+code { background: var(--surface-2); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+@media (max-width: 720px) {
+  .t-shell { grid-template-columns: 1fr; }
+  .t-sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+  .t-main { padding: 24px; }
+}

@@ -1,0 +1,19 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Claude / agent state
+.claude/
+
+# Pure runtime user state (JSON files, uploads, sessions)
+runtime/therum/data/
+
+# Build / temp
+*.bak
+*.tmp
+*.log

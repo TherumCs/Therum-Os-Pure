@@ -1,0 +1,88 @@
+/* Therum OS Pure — frontend (rendered pages) styling. */
+
+:root {
+  --bg: #ffffff;
+  --text: #1c1917;
+  --text-2: #57534e;
+  --text-3: #a8a29e;
+  --border: #e7e5e4;
+  --accent: #2563eb;
+  --max: 720px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body.t-fe {
+  font: 16px/1.7 Georgia, "Iowan Old Style", "Palatino Linotype", "URW Palladio L", P052, serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.t-fe-head {
+  border-bottom: 1px solid var(--border);
+  padding: 22px 0;
+  text-align: center;
+}
+.t-fe-brand {
+  display: inline-block;
+  font: 700 18px/1 -apple-system, system-ui, sans-serif;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.t-fe-brand:hover { color: var(--accent); text-decoration: none; }
+.t-fe-tagline {
+  margin: 8px 0 0;
+  color: var(--text-3);
+  font: 13px/1 -apple-system, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.t-fe-main {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+.t-fe-main h1, .t-fe-main h2, .t-fe-main h3 {
+  font-family: -apple-system, system-ui, "Segoe UI", sans-serif;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+.t-fe-main h1 { font-size: 36px; margin: 0 0 18px; }
+.t-fe-main h2 { font-size: 24px; margin: 40px 0 12px; }
+.t-fe-main h3 { font-size: 18px; margin: 30px 0 10px; }
+.t-fe-main p  { margin: 0 0 18px; }
+.t-fe-main a  { color: var(--accent); }
+.t-fe-main img { max-width: 100%; height: auto; border-radius: 8px; }
+.t-fe-main blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 0 0 0 20px;
+  margin: 24px 0;
+  color: var(--text-2);
+  font-style: italic;
+}
+.t-fe-main code {
+  background: #f4f4f3;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font: 14px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+.t-fe-main pre {
+  background: #1c1917;
+  color: #fafaf9;
+  padding: 18px 22px;
+  border-radius: 10px;
+  overflow: auto;
+}
+.t-fe-main pre code { background: none; padding: 0; font-size: 13px; }
+
+.t-fe-empty { text-align: center; color: var(--text-2); }
+.t-fe-empty h1 { margin-bottom: 12px; }
+
+.t-fe-foot {
+  text-align: center;
+  padding: 28px 20px;
+  color: var(--text-3);
+  font: 12px/1 -apple-system, system-ui, sans-serif;
+  border-top: 1px solid var(--border);
+}
