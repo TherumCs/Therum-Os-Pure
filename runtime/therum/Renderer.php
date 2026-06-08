@@ -56,6 +56,16 @@ HTML);
         $brand   = $h($site['title']   ?? 'Therum site');
         $tagline = $h($site['tagline'] ?? '');
         $tagline_html = $tagline ? '<p class="t-fe-tagline">' . $tagline . '</p>' : '';
+
+        // Frontend pages can contain arbitrary admin-authored HTML (the editor
+        // is HTML-by-design). Lock the public surface with a strict CSP so an
+        // admin XSS can't pull third-party scripts. Inline styles are allowed
+        // for page-body markup; scripts and external sources are not.
+        if (!headers_sent()) {
+            header("Content-Security-Policy: default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
+            header('X-Content-Type-Options: nosniff');
+            header('Referrer-Policy: strict-origin-when-cross-origin');
+        }
         return <<<HTML
 <!doctype html>
 <html lang="en">

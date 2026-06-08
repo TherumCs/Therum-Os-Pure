@@ -31,6 +31,10 @@ final class Updates
     private const CACHE_TTL  = 6 * 60 * 60; // 6h
     private const NEGATIVE_TTL = 15 * 60;   // 15m for "no release" / errors
 
+    /** Per-request memory cache for the negative-result path so a flaky
+     *  network can't drive a disk write storm. */
+    private static array $request_cache = [];
+
     public static function repo(): string
     {
         // Allow per-install override via env var or constant. Defaults to
@@ -67,12 +71,17 @@ final class Updates
     {
         $storage = t_app()->storage;
         if (!$force) {
+            // Memory cache wins first — same request never hits disk twice.
+            if (array_key_exists('latest', self::$request_cache)) {
+                return self::$request_cache['latest'];
+            }
             $cached = $storage->get(self::CACHE_KEY);
             if (is_array($cached)) {
                 $age = time() - (int) ($cached['fetched_at'] ?? 0);
                 $hit = $cached['hit'] ?? null;
                 $ttl = $hit ? self::CACHE_TTL : self::NEGATIVE_TTL;
                 if ($age < $ttl) {
+                    self::$request_cache['latest'] = $hit ?: null;
                     return $hit ?: null;
                 }
             }
@@ -81,7 +90,11 @@ final class Updates
         $url = 'https://api.github.com/repos/' . self::repo() . '/releases/latest';
         $body = self::http_get_json($url);
         if (!is_array($body) || empty($body['tag_name'])) {
-            $storage->set(self::CACHE_KEY, ['hit' => null, 'fetched_at' => time()]);
+            // Avoid writing the negative-cache file twice in one request.
+            if (!array_key_exists('latest', self::$request_cache)) {
+                $storage->set(self::CACHE_KEY, ['hit' => null, 'fetched_at' => time()]);
+            }
+            self::$request_cache['latest'] = null;
             return null;
         }
 
@@ -114,17 +127,27 @@ final class Updates
             $asset_n = $tag . '.zip (source)';
         }
 
+        // Pull an expected SHA256 from the release notes if the publisher
+        // included one (line like `sha256: <hex>` or `SHA256: <hex>`).
+        $expected_sha = '';
+        $notes = (string) ($body['body'] ?? '');
+        if (preg_match('/sha256\s*[:=]\s*([a-f0-9]{64})/i', $notes, $m)) {
+            $expected_sha = strtolower($m[1]);
+        }
+
         $hit = [
             'version'      => $version,
             'tag'          => $tag,
             'name'         => (string) ($body['name'] ?? $tag),
-            'body'         => (string) ($body['body'] ?? ''),
+            'body'         => $notes,
             'published_at' => (string) ($body['published_at'] ?? ''),
             'html_url'     => (string) ($body['html_url'] ?? ''),
             'zip_url'      => $zip_url,
             'asset_name'   => $asset_n,
+            'sha256'       => $expected_sha,
         ];
         $storage->set(self::CACHE_KEY, ['hit' => $hit, 'fetched_at' => time()]);
+        self::$request_cache['latest'] = $hit;
         return $hit;
     }
 
@@ -160,6 +183,17 @@ final class Updates
         // 1. Download
         if (!self::download($latest['zip_url'], $tmp_zip)) {
             throw new \RuntimeException('Download failed from ' . $latest['zip_url']);
+        }
+
+        // 1a. Verify SHA256 if the release publisher included one in the notes.
+        // Skip verification when no checksum was published, but log it so an
+        // operator can decide whether the channel is trustworthy.
+        if (!empty($latest['sha256'])) {
+            $got = hash_file('sha256', $tmp_zip) ?: '';
+            if (!hash_equals(strtolower($latest['sha256']), strtolower($got))) {
+                @unlink($tmp_zip);
+                throw new \RuntimeException('SHA256 mismatch — refusing to install. Expected ' . $latest['sha256'] . ', got ' . $got);
+            }
         }
 
         // 2. Extract to staging dir
@@ -250,6 +284,7 @@ final class Updates
         $latest  = self::latest_release();
         $repo    = self::repo();
         $h       = fn(string $s) => htmlspecialchars($s, ENT_QUOTES);
+        $csrf    = t_app()->auth->csrf_field();
 
         $banner = '';
         if ($error) $banner = '<div class="t-err">' . $h($error) . '</div>';
@@ -261,7 +296,7 @@ final class Updates
 <div class="t-card" style="display:block;padding:24px">
   <strong>Couldn't reach GitHub.</strong>
   <p class="t-muted">Network down, rate-limited, or the repo has no releases yet. Negative cached for 15 min.</p>
-  <form method="post" action="/admin/updates/check" style="margin-top:14px"><button class="t-btn">Try again</button></form>
+  <form method="post" action="/admin/updates/check" style="margin-top:14px">{$csrf}<button class="t-btn">Try again</button></form>
 </div>
 HTML;
         } else {
@@ -270,7 +305,7 @@ HTML;
             $color  = $newer ? 'var(--ok)' : 'var(--text-3)';
             $notes  = $h($latest['body']) ?: '<em class="t-muted">No release notes.</em>';
             $apply_btn = $newer
-                ? '<form method="post" action="/admin/updates/apply" onsubmit="return confirm(\'Replace the live therum/ directory? A backup will be taken automatically.\')"><button class="t-btn t-btn-primary">Apply ' . $h($latest['version']) . '</button></form>'
+                ? '<form method="post" action="/admin/updates/apply" data-confirm="Replace the live therum/ directory? A backup will be taken automatically.">' . $csrf . '<button class="t-btn t-btn-primary">Apply ' . $h($latest['version']) . '</button></form>'
                 : '';
             $body = <<<HTML
 <div class="t-cards">
@@ -286,7 +321,7 @@ HTML;
 </div>
 <div style="margin-top:24px;display:flex;gap:10px;align-items:center">
   {$apply_btn}
-  <form method="post" action="/admin/updates/check" class="t-inline-form"><button class="t-btn">Refresh</button></form>
+  <form method="post" action="/admin/updates/check" class="t-inline-form">{$csrf}<button class="t-btn">Refresh</button></form>
   <a class="t-link-muted" href="{$h($latest['html_url'])}" target="_blank" rel="noopener">View on GitHub ↗</a>
 </div>
 <h3 style="margin-top:32px">Release notes</h3>
@@ -297,7 +332,8 @@ HTML;
         $upload_panel = <<<HTML
 <h3 style="margin-top:36px">Drop a ZIP</h3>
 <p class="t-muted" style="margin:6px 0 14px;font-size:13px">Apply a Pure ZIP from disk — useful for offline installs, fork builds, or rolling back from a known-good local copy. Same backup-and-swap flow as the GitHub channel.</p>
-<form method="post" action="/admin/updates/upload" enctype="multipart/form-data" onsubmit="return confirm('Apply this ZIP? The live therum/ directory will be backed up first.')" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<form method="post" action="/admin/updates/upload" enctype="multipart/form-data" data-confirm="Apply this ZIP? The live therum/ directory will be backed up first." style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+  {$csrf}
   <input type="file" name="zip" accept=".zip,application/zip" required style="flex:1;min-width:260px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:8px;background:var(--surface-2);font:13px/1 inherit;color:var(--text);">
   <button type="submit" class="t-btn t-btn-primary">Apply ZIP</button>
 </form>

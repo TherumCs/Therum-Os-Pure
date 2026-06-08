@@ -1,7 +1,9 @@
-/* Therum OS Pure — admin JS. v1 only wires the Code / Preview tab toggle
-   in the page editor. Block-mode editor lands in a later release. */
+/* Therum OS Pure — admin JS.
+   - Code / Preview tab toggle in the page editor
+   - Delegated confirm() guard on destructive forms (marked data-confirm). */
 
 (function () {
+  // Editor tabs
   document.querySelectorAll('.t-editor').forEach(function (editor) {
     var tabs    = editor.querySelectorAll('.t-tab');
     var code    = editor.querySelector('.t-editor-code');
@@ -23,5 +25,16 @@
         }
       });
     });
+  });
+
+  // Delegated confirm guard. Forms render `data-confirm="message"` and we
+  // intercept submit at the document level — replaces the inline onsubmit
+  // attributes the templates used to ship.
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form || !form.dataset || !form.dataset.confirm) return;
+    if (!window.confirm(form.dataset.confirm)) {
+      e.preventDefault();
+    }
   });
 })();

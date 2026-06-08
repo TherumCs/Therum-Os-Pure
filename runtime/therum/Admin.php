@@ -17,6 +17,7 @@ final class Admin
     public static function login(?string $error = null, string $email = ''): string
     {
         $h = fn(string $s) => htmlspecialchars($s, ENT_QUOTES);
+        $csrf = t_app()->auth->csrf_field();
         $err_html = $error ? '<div class="t-err">' . $h($error) . '</div>' : '';
         return self::page('Sign in', <<<HTML
 <main class="t-install-card">
@@ -24,6 +25,7 @@ final class Admin
   <h1>Sign in</h1>
   {$err_html}
   <form method="post" action="/admin/login" class="t-form" autocomplete="on">
+    {$csrf}
     <label>Email <input type="email" name="email" required value="{$h($email)}" /></label>
     <label>Password <input type="password" name="password" required autocomplete="current-password" /></label>
     <button type="submit" class="t-btn t-btn-primary">Sign in →</button>
@@ -88,6 +90,7 @@ HTML);
     {
         $site = (array) t_app()->storage->get('site', []);
         $h = fn(string $s) => htmlspecialchars((string) $s, ENT_QUOTES);
+        $csrf = t_app()->auth->csrf_field();
         $flash_html = $flash ? '<div class="t-ok">' . $h($flash) . '</div>' : '';
         $title   = $h($site['title']   ?? '');
         $tagline = $h($site['tagline'] ?? '');
@@ -95,6 +98,7 @@ HTML);
 <div class="t-page-head"><h1>Site settings</h1></div>
 {$flash_html}
 <form method="post" action="/admin/settings" class="t-form">
+  {$csrf}
   <label>Site title <input name="title" required value="{$title}" /></label>
   <label>Tagline <input name="tagline" value="{$tagline}" /></label>
   <button type="submit" class="t-btn t-btn-primary">Save</button>

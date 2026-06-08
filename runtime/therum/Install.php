@@ -18,6 +18,7 @@ final class Install
         $errors = $errors ?? [];
         $values = $values ?? ['site_title' => '', 'name' => '', 'email' => ''];
         $h = fn(string $s) => htmlspecialchars($s, ENT_QUOTES);
+        $csrf = t_app()->auth->csrf_field();
         $err_html = '';
         if (!empty($errors)) {
             $err_html = '<div class="t-err">' . implode('<br>', array_map($h, $errors)) . '</div>';
@@ -38,6 +39,7 @@ final class Install
     <p class="t-lede">One-time setup. We'll create your site and your first admin account.</p>
     {$err_html}
     <form method="post" action="/install" class="t-form" autocomplete="off">
+      {$csrf}
       <label>Site title
         <input name="site_title" required value="{$h($values['site_title'])}" placeholder="My Therum Site" />
       </label>

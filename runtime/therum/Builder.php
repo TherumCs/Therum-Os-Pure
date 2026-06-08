@@ -22,6 +22,7 @@ final class Builder
     public static function list_view(?string $flash = null): string
     {
         $pages = Pages::list();
+        $csrf  = t_app()->auth->csrf_field();
         $h = fn(string $s) => htmlspecialchars($s, ENT_QUOTES);
         $flash_html = $flash ? '<div class="t-ok">' . $h($flash) . '</div>' : '';
         $rows = '';
@@ -33,7 +34,7 @@ final class Builder
                   . '<td class="t-row-actions">'
                   . '<a href="/admin/pages/' . $h($slug) . '/edit" class="t-link">Edit</a> · '
                   . '<a href="' . ($slug === 'home' ? '/' : '/page/' . $h($slug)) . '" target="_blank" class="t-link">View</a> · '
-                  . '<form method="post" action="/admin/pages/' . $h($slug) . '/delete" class="t-inline-form" onsubmit="return confirm(\'Delete this page? This cannot be undone.\')"><button class="t-link t-link-danger">Delete</button></form>'
+                  . '<form method="post" action="/admin/pages/' . $h($slug) . '/delete" class="t-inline-form" data-confirm="Delete this page? This cannot be undone.">' . $csrf . '<button class="t-link t-link-danger">Delete</button></form>'
                   . '</td></tr>';
         }
         if (!$rows) {
@@ -57,6 +58,7 @@ HTML);
     {
         $is_new  = $existing === null;
         $h = fn(string $s) => htmlspecialchars((string) $s, ENT_QUOTES);
+        $csrf  = t_app()->auth->csrf_field();
         $values  = $values ?? [
             'title' => $existing['title'] ?? '',
             'slug'  => $existing['slug']  ?? '',
@@ -69,7 +71,8 @@ HTML);
         $action = $is_new ? '/admin/pages/new' : '/admin/pages/' . $h($values['slug']) . '/edit';
         $title_label = $is_new ? 'New page' : 'Edit page';
         $delete_btn = $is_new ? '' :
-            '<form method="post" action="/admin/pages/' . $h($values['slug']) . '/delete" class="t-inline-form" onsubmit="return confirm(\'Delete this page?\')">'
+            '<form method="post" action="/admin/pages/' . $h($values['slug']) . '/delete" class="t-inline-form" data-confirm="Delete this page?">'
+            . $csrf
             . '<button class="t-btn t-btn-danger">Delete</button></form>';
         $slug_help = $is_new
             ? '<small>Leave blank to auto-generate from the title. Use <code>home</code> for the front page.</small>'
@@ -86,6 +89,7 @@ HTML);
 </div>
 {$err_html}
 <form method="post" action="{$action}" class="t-form t-form-wide">
+  {$csrf}
   <label>Title <input name="title" required value="{$title_v}" placeholder="Page title" autofocus /></label>
   <label>Slug {$slug_input}{$slug_help}</label>
   <label>Body

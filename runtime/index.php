@@ -36,9 +36,11 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $uri    = $_SERVER['REQUEST_URI']    ?? '/';
 
 // First-run gate. If no users exist yet, the install screen takes over the
-// whole site — every URL routes to /install.
+// whole site — every URL routes to /install. The POST handler verifies CSRF
+// before creating the first admin user.
 if (!$auth->has_any_user()) {
     if ($method === 'POST' && str_starts_with($uri, '/install')) {
+        $auth->require_csrf();
         echo Install::handle_post();
     } else {
         echo Install::render();
@@ -52,7 +54,10 @@ $router->get('/page/*',     fn(string $slug) => Renderer::show($slug));
 
 // ── Auth ─────────────────────────────────────────────────────────────────
 $router->get ('/admin/login',  fn() => Admin::login());
-$router->post('/admin/login',  fn() => Admin::handle_login());
+$router->post('/admin/login',  function () use ($auth) {
+    $auth->require_csrf();
+    return Admin::handle_login();
+});
 $router->get ('/admin/logout', function () use ($auth) {
     $auth->logout();
     header('Location: /admin/login');
@@ -84,6 +89,7 @@ $router->get('/admin/pages/new', function () use ($auth) {
 });
 $router->post('/admin/pages/new', function () use ($auth) {
     $auth->require_auth();
+    $auth->require_csrf();
     return Builder::handle_new();
 });
 
@@ -98,10 +104,12 @@ $router->get('/admin/pages/*/edit', function (string $slug) use ($auth) {
 });
 $router->post('/admin/pages/*/edit', function (string $slug) use ($auth) {
     $auth->require_auth();
+    $auth->require_csrf();
     return Builder::handle_update($slug);
 });
 $router->post('/admin/pages/*/delete', function (string $slug) use ($auth) {
     $auth->require_auth();
+    $auth->require_csrf();
     return Builder::handle_delete($slug);
 });
 
@@ -111,6 +119,7 @@ $router->get('/admin/settings', function () use ($auth) {
 });
 $router->post('/admin/settings', function () use ($auth) {
     $auth->require_auth();
+    $auth->require_csrf();
     return Admin::handle_settings();
 });
 
@@ -121,14 +130,17 @@ $router->get('/admin/updates', function () use ($auth) {
 });
 $router->post('/admin/updates/check', function () use ($auth) {
     $auth->require_auth();
+    $auth->require_csrf();
     return Updates::handle_check();
 });
 $router->post('/admin/updates/apply', function () use ($auth) {
     $auth->require_auth();
+    $auth->require_csrf();
     return Updates::handle_apply();
 });
 $router->post('/admin/updates/upload', function () use ($auth) {
     $auth->require_auth();
+    $auth->require_csrf();
     return Updates::handle_upload();
 });
 
